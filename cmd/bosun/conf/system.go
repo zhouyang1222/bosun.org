@@ -53,6 +53,7 @@ type SystemConf struct {
 	EnableReload    bool
 	CommandHookPath string
 	RuleFilePath    string
+	EtcdUrl         string       //zy--------add
 	md              toml.MetaData
 }
 
@@ -403,7 +404,10 @@ func (sc *SystemConf) GetCommandHookPath() string {
 func (sc *SystemConf) GetRuleFilePath() string {
 	return sc.RuleFilePath
 }
-
+// ---------zy-------------add
+func (sc *SystemConf) GetEtcdUrl() string {
+	return sc.EtcdUrl
+}
 // SetTSDBHost sets the OpenTSDB host and used when Bosun is set to readonly mode
 func (sc *SystemConf) SetTSDBHost(tsdbHost string) {
 	sc.OpenTSDBConf.Host = tsdbHost

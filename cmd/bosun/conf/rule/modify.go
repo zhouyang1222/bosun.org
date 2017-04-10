@@ -1,6 +1,10 @@
 package rule
 
 import (
+        "strings"
+        "net/http"
+        "net/url"
+        "bosun.org/slog" //-------zy-----add-----
 	"bytes"
 	"fmt"
 
@@ -15,10 +19,23 @@ import (
 // will not be saved. If the savehook fails to run or returns an error thaen the orginal config
 // will be restored and the reload will not take place.
 func (c *Conf) SaveRawText(rawConfig, diff, user, message string, args ...string) error {
-	newConf, err := NewConf(c.Name, c.backends, rawConfig)
-	if err != nil {
-		return err
-	}
+//-------------zy----------------------add-------------------------------------	
+
+        client := &http.Client{}
+        url_etcd := "http://172.18.1.221:2379/v2/keys/mykey"
+        request, err := http.NewRequest("PUT", url_etcd, strings.NewReader("value="+url.QueryEscape(rawConfig)))
+        if err != nil {
+            slog.Infoln("zy-------get data failt")
+        }
+        request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+        client.Do(request)
+        
+        
+//------------zy-----------------------end-------------------------------------
+//      newConf, err := NewConf(c.Name, c.backends, rawConfig) //---zy-----delete
+//	if err != nil {
+//		return err
+//	}
 	currentDiff, err := c.RawDiff(rawConfig)
 	if err != nil {
 		return fmt.Errorf("couldn't save config because failed to generate a diff: %v", err)
@@ -26,9 +43,9 @@ func (c *Conf) SaveRawText(rawConfig, diff, user, message string, args ...string
 	if currentDiff != diff {
 		return fmt.Errorf("couldn't save config file because the change and supplied diff do not match the current diff")
 	}
-	if err = c.SaveConf(newConf); err != nil {
-		return fmt.Errorf("couldn't save config file: %v", err)
-	}
+//	if err = c.SaveConf(newConf); err != nil { //----------zy-----delete
+//		return fmt.Errorf("couldn't save config file: %v", err)
+//	}
 	if c.saveHook != nil {
 		err := c.callSaveHook(c.Name, user, message, args...)
 		if err != nil {
@@ -106,9 +123,9 @@ func (c *Conf) BulkEdit(edits conf.BulkEditRequest) error {
 			return fmt.Errorf("could not create new conf: failed on step %v:%v : %v", edit.Type, edit.Name, err)
 		}
 	}
-	if err := c.SaveConf(newConf); err != nil {
-		return fmt.Errorf("couldn't save config file: %v", err)
-	}
+//	if err := c.SaveConf(newConf); err != nil {     //-------zy
+//		return fmt.Errorf("couldn't save config file: %v", err)
+//	}
 	err = c.reload()
 	if err != nil {
 		return err

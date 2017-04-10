@@ -57,6 +57,7 @@ type SystemConfProvider interface {
 	GetInternetProxy() string
 
 	GetRuleFilePath() string
+	GetEtcdUrl() string    //zy------add
 	SaveEnabled() bool
 	ReloadEnabled() bool
 	GetCommandHookPath() string

@@ -114,7 +114,7 @@ func main() {
 	if err != nil {
 		slog.Fatal(err)
 	}
-	ruleConf, err := rule.ParseFile(sysProvider.GetRuleFilePath(), systemConf.EnabledBackends())
+	ruleConf, err := rule.ParseFile(sysProvider.GetEtcdUrl(), systemConf.EnabledBackends()) //zy---use GetEtcdUrl--
 	if err != nil {
 		slog.Fatalf("couldn't read rules: %v", err)
 	}
@@ -219,7 +219,7 @@ func main() {
 		defer func() {
 			<-reloading
 		}()
-		newConf, err := rule.ParseFile(sysProvider.GetRuleFilePath(), sysProvider.EnabledBackends())
+		newConf, err := rule.ParseFile(sysProvider.GetEtcdUrl(), sysProvider.EnabledBackends())
 		if err != nil {
 			return err
 		}

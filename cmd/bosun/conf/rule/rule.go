@@ -1,6 +1,7 @@
 package rule
 
 import (
+        "net/http"   //zy-------add
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -126,11 +127,45 @@ func (c *Conf) parseNotifications(v string) (map[string]*conf.Notification, erro
 }
 
 func ParseFile(fname string, backends conf.EnabledBackends) (*Conf, error) {
-	f, err := ioutil.ReadFile(fname)
-	if err != nil {
-		return nil, err
-	}
-	return NewConf(fname, backends, string(f))
+//	f, err := ioutil.ReadFile("/data/bosunrules_zy.conf")   ------------zy-------delete
+//	if err != nil {
+//		return nil, err
+//	}
+       
+//------------------------zy----------------------------start---------
+        type Rules struct {
+            Key     string 
+            Value   string
+        }
+        type Rule struct {
+            Node  Rules
+        }
+        client := &http.Client{}
+        url := "http://172.18.1.221:2379/v2/keys/mykey"
+        request, erro := http.NewRequest("GET", url, nil)
+        if erro != nil {
+            slog.Fatalf("connect etcd failt: %s",erro)
+        }
+        //发起请求
+        response, err := client.Do(request)
+        if err != nil {
+            slog.Fatalf("request etcd failt: %s",err) 
+        }
+        if response.StatusCode != 200 {
+            slog.Fatalf("read data failt response.StatusCode: %s",response.StatusCode)
+        }
+        //从响应body读取数据
+        object, err := ioutil.ReadAll(response.Body)
+        if err != nil {
+            slog.Fatalf("get data failt: %s",err)
+        }
+        var r Rule
+        json.Unmarshal([]byte(object), &r)
+        rule_string := r.Node.Value
+
+//----------------------------------zy-----------------------end---
+//	return NewConf(fname, backends, string(f))
+	return NewConf(fname, backends, rule_string)  //---zy---modify---
 }
 
 func (c *Conf) SaveConf(newConf *Conf) error {
